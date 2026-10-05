@@ -31,4 +31,6 @@
     <color name="maxx_bubble_out">#FFFFFF</color>
     <color name="maxx_text_primary">#0F2B27</color>
     <color name="maxx_text_secondary">#5C6F6B</color>
+    <color name="maxx_chip_idle">#1F5C6F6B</color>
+    <color name="maxx_icon">@color/maxx_text_primary</color>
 </resources>

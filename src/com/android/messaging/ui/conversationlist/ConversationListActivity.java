@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
  * Copyright (C) 2024-2025 The LineageOS Project
+ * Copyright (C) 2026 Anshuman_X (maxxcodebug) - MaxxOS design (modifications)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +54,9 @@ public class ConversationListActivity extends AbstractConversationListActivity {
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setBackgroundDrawable(new ColorDrawable(
                 getResources().getColor(R.color.action_bar_background_color)));
-        actionBar.show();
+        // MaxxOS: the header lives inside ConversationListFragment; the contextual action bar
+        // (multi-select) still calls show() itself.
+        actionBar.hide();
         super.updateActionBar(actionBar);
     }
 

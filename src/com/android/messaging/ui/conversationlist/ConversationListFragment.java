@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
  * Copyright (C) 2024-2025 The LineageOS Project
+ * Copyright (C) 2026 Anshuman_X (maxxcodebug) - MaxxOS design (modifications)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +18,17 @@
 package com.android.messaging.ui.conversationlist;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,7 +38,11 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewPropertyAnimator;
 import android.view.accessibility.AccessibilityManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
+import android.widget.EditText;
+import android.widget.PopupMenu;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewGroupCompat;
@@ -90,6 +100,15 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     private ExtendedFloatingActionButton mStartNewConversationButton;
     private ListEmptyView mEmptyListMessageView;
     private ConversationListAdapter mAdapter;
+
+    // MaxxOS header / filter state
+    private Cursor mRawCursor;
+    private int mMaxxFilter = MaxxConversationFilterCursor.FILTER_ALL;
+    private String mMaxxQuery = "";
+    private View mMaxxSearchButton;
+    private View mMaxxTitleBlock;
+    private EditText mMaxxSearchInput;
+    private final TextView[] mMaxxChips = new TextView[4];
 
     // Saved Instance State Data - only for temporal data which is nice to maintain but not
     // critical for correctness.
@@ -228,6 +247,8 @@ public class ConversationListFragment extends Fragment implements ConversationLi
                     mHost.onCreateConversationClick());
         }
 
+        setupMaxxChrome(rootView);
+
         // The root view has a non-null background, which by default is deemed by the framework
         // to be a "transition group," where all child views are animated together during an
         // activity transition. However, we want each individual items in the recycler view to
@@ -270,8 +291,10 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     public void onConversationListCursorUpdated(final ConversationListData data,
             final Cursor cursor) {
         mListBinding.ensureBound(data);
-        final Cursor oldCursor = mAdapter.swapCursor(cursor);
-        updateEmptyListUi(cursor == null || cursor.getCount() == 0);
+        mRawCursor = cursor;
+        final Cursor shown = buildMaxxCursor(cursor);
+        final Cursor oldCursor = mAdapter.swapCursor(shown);
+        updateEmptyListUi(shown == null || shown.getCount() == 0);
         if (mListState != null && cursor != null && oldCursor == null) {
             mRecyclerView.getLayoutManager().onRestoreInstanceState(mListState);
         }
@@ -365,6 +388,149 @@ public class ConversationListFragment extends Fragment implements ConversationLi
         } else {
             mEmptyListMessageView.setVisibility(View.GONE);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // MaxxOS header, filter chips, search and floating navigation
+    // ---------------------------------------------------------------------------------------
+
+    private Cursor buildMaxxCursor(final Cursor raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (mMaxxFilter == MaxxConversationFilterCursor.FILTER_ALL && mMaxxQuery.isEmpty()) {
+            return raw;
+        }
+        return new MaxxConversationFilterCursor(raw, mMaxxFilter, mMaxxQuery);
+    }
+
+    private void applyMaxxFilter() {
+        if (mRawCursor == null || mAdapter == null) {
+            return;
+        }
+        final Cursor shown = buildMaxxCursor(mRawCursor);
+        mAdapter.swapCursor(shown);
+        updateEmptyListUi(shown == null || shown.getCount() == 0);
+    }
+
+    private void setMaxxFilter(final int filter) {
+        mMaxxFilter = filter;
+        for (int i = 0; i < mMaxxChips.length; i++) {
+            if (mMaxxChips[i] != null) {
+                mMaxxChips[i].setSelected(i == filter);
+            }
+        }
+        applyMaxxFilter();
+    }
+
+    private void setupMaxxChrome(final ViewGroup rootView) {
+        final View header = rootView.findViewById(R.id.maxx_header_container);
+        final View nav = rootView.findViewById(R.id.maxx_bottom_nav);
+        if (mArchiveMode || mForwardMessageMode) {
+            // Keep the stock look for archived / forward-message pickers.
+            header.setVisibility(View.GONE);
+            nav.setVisibility(View.GONE);
+            return;
+        }
+
+        // Filter chips
+        final int[] chipIds = {R.id.maxx_chip_all, R.id.maxx_chip_personal,
+                R.id.maxx_chip_business, R.id.maxx_chip_otp};
+        for (int i = 0; i < chipIds.length; i++) {
+            final int filter = i;
+            mMaxxChips[i] = rootView.findViewById(chipIds[i]);
+            mMaxxChips[i].setSelected(i == mMaxxFilter);
+            mMaxxChips[i].setOnClickListener(v -> setMaxxFilter(filter));
+        }
+
+        // Search
+        mMaxxSearchButton = rootView.findViewById(R.id.maxx_search_button);
+        mMaxxTitleBlock = rootView.findViewById(R.id.maxx_title_block);
+        mMaxxSearchInput = rootView.findViewById(R.id.maxx_search_input);
+        mMaxxSearchButton.setOnClickListener(v -> {
+            if (mMaxxSearchInput.getVisibility() == View.VISIBLE) {
+                closeMaxxSearch();
+            } else {
+                openMaxxSearch();
+            }
+        });
+        mMaxxSearchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(final CharSequence s, final int a, final int b,
+                    final int c) {
+            }
+
+            @Override
+            public void onTextChanged(final CharSequence s, final int a, final int b,
+                    final int c) {
+            }
+
+            @Override
+            public void afterTextChanged(final Editable e) {
+                mMaxxQuery = e == null ? "" : e.toString();
+                applyMaxxFilter();
+            }
+        });
+
+        // Overflow menu
+        rootView.findViewById(R.id.maxx_more_button).setOnClickListener(this::showMaxxOverflow);
+
+        // Bottom navigation
+        rootView.findViewById(R.id.maxx_nav_contacts).setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        ContactsContract.Contacts.CONTENT_URI));
+            } catch (final ActivityNotFoundException e) {
+                LogUtil.w(LogUtil.BUGLE_TAG, "No contacts app available");
+            }
+        });
+        rootView.findViewById(R.id.maxx_nav_settings).setOnClickListener(v ->
+                UIIntents.get().launchSettingsActivity(getActivity()));
+        final View assistant = rootView.findViewById(R.id.maxx_nav_assistant);
+        // Hidden until the Assistant tab is given an action (see maxx_show_assistant_tab).
+        assistant.setVisibility(getResources().getBoolean(R.bool.maxx_show_assistant_tab)
+                ? View.VISIBLE : View.GONE);
+    }
+
+    private void openMaxxSearch() {
+        mMaxxTitleBlock.setVisibility(View.INVISIBLE);
+        mMaxxSearchInput.setVisibility(View.VISIBLE);
+        mMaxxSearchInput.requestFocus();
+        final InputMethodManager imm = (InputMethodManager) requireActivity()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(mMaxxSearchInput, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void closeMaxxSearch() {
+        mMaxxSearchInput.setText("");
+        mMaxxSearchInput.setVisibility(View.GONE);
+        mMaxxTitleBlock.setVisibility(View.VISIBLE);
+        ImeUtil.get().hideImeKeyboard(getActivity(), mMaxxSearchInput);
+    }
+
+    private void showMaxxOverflow(final View anchor) {
+        final PopupMenu popup = new PopupMenu(requireActivity(), anchor);
+        final Menu menu = popup.getMenu();
+        final int archived = 1, blocked = 2, settings = 3;
+        menu.add(Menu.NONE, archived, Menu.NONE, R.string.action_menu_show_archived);
+        if (mBlockedAvailable) {
+            menu.add(Menu.NONE, blocked, Menu.NONE, R.string.blocked_contacts_title);
+        }
+        menu.add(Menu.NONE, settings, Menu.NONE, R.string.action_settings);
+        popup.setOnMenuItemClickListener(item -> {
+            final int id = item.getItemId();
+            if (id == archived) {
+                UIIntents.get().launchArchivedConversationsActivity(getActivity());
+            } else if (id == blocked) {
+                UIIntents.get().launchBlockedParticipantsActivity(getActivity());
+            } else if (id == settings) {
+                UIIntents.get().launchSettingsActivity(getActivity());
+            }
+            return true;
+        });
+        popup.show();
     }
 
     @Override
