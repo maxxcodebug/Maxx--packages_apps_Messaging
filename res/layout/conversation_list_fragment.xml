@@ -38,13 +38,15 @@
         android:layout_marginBottom="@dimen/conversation_list_empty_text_bottom_margin" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay"
+        app:shapeAppearanceOverlay="@style/MaxxFabShapeAppearance"
         android:id="@+id/start_new_conversation_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:text="@string/start_chat"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="96dp"
+        android:text=""
+        android:contentDescription="@string/start_chat"
         android:forceDarkAllowed="false"
         android:textColor="@color/fab_fg_color"
         app:backgroundTint="@color/fab_color"

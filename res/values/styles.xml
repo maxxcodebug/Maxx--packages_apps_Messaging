@@ -51,7 +51,7 @@
     </style>
 
     <style name="BugleTheme.ConversationActivityBase" parent="BugleTheme">
-        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:windowBackground">@drawable/maxx_window_background</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="colorAccent">@color/lineage_accent</item>
         <item name="android:fastScrollPreviewBackgroundLeft">@drawable/contacts_fastscroll_label_left</item>
@@ -66,7 +66,7 @@
     </style>
 
     <style name="BugleTheme.ConversationListActivity" parent="BugleTheme">
-        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:windowBackground">@drawable/maxx_window_background</item>
     </style>
 
     <style name="BugleTheme.ArchivedConversationListActivity" parent="BugleTheme.ConversationListActivity">
@@ -75,7 +75,7 @@
     </style>
 
     <style name="BugleTheme.SettingsActivity" parent="BugleTheme">
-        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:windowBackground">@drawable/maxx_window_background</item>
         <item name="android:textSize">@dimen/settings_list_text_size</item>
     </style>
 
@@ -593,6 +593,12 @@
 
     <style name="AppSwitchPreference" parent="@style/Preference.SwitchPreferenceCompat.Material">
         <item name="widgetLayout">@layout/preference_material_switch</item>
+    </style>
+
+    <!-- MaxxOS: squircle FAB (20dp) -->
+    <style name="MaxxFabShapeAppearance" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
     </style>
 
     <style name="ShapeAppearanceOverlay" parent="">

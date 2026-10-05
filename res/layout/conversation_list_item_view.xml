@@ -29,7 +29,7 @@
         android:layout_height="match_parent"
         android:gravity="center_vertical|start"
         android:baselineAligned="false"
-        android:background="@color/window_background"
+        android:background="@android:color/transparent"
         android:visibility="gone"
         android:padding="@dimen/conversation_list_item_view_padding">
         <ImageView
@@ -58,13 +58,17 @@
         android:id="@+id/swipeableContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:importantForAccessibility="no" >
         <LinearLayout
             android:id="@+id/swipeableContent"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="@drawable/maxx_card_ripple"
             android:clipToPadding="false"
             android:duplicateParentState="true"
             android:padding="@dimen/conversation_list_item_view_padding"

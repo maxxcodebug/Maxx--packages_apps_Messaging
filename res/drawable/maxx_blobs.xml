@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 Anshuman_X (maxxcodebug) - MaxxOS design
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="800dp"
+    android:viewportWidth="360"
+    android:viewportHeight="800">
+    <!-- top-right soft blob -->
+    <path
+        android:fillColor="@color/maxx_blob_a"
+        android:fillAlpha="0.75"
+        android:pathData="M200,0 C260,40 330,20 360,70 L360,230 C320,270 270,230 230,180 C190,130 150,60 200,0 Z" />
+    <!-- left-middle blob -->
+    <path
+        android:fillColor="@color/maxx_blob_b"
+        android:fillAlpha="0.65"
+        android:pathData="M0,330 C60,300 130,350 150,430 C170,520 90,560 0,540 Z" />
+    <!-- lower wave -->
+    <path
+        android:fillColor="@color/maxx_blob_c"
+        android:fillAlpha="0.8"
+        android:pathData="M0,560 C80,520 170,590 250,650 C310,695 340,740 360,760 L360,800 L0,800 Z" />
+    <!-- right-lower blue blob -->
+    <path
+        android:fillColor="@color/maxx_blob_b"
+        android:fillAlpha="0.55"
+        android:pathData="M360,480 C300,470 250,520 260,590 C270,660 330,690 360,680 Z" />
+    <!-- floating dots -->
+    <path android:fillColor="@color/maxx_blob_a" android:pathData="M60,430 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path android:fillColor="@color/maxx_blob_b" android:pathData="M300,300 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="@color/maxx_blob_a" android:pathData="M120,700 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+</vector>
